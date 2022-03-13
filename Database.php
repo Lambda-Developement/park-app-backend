@@ -17,4 +17,10 @@ class Database extends mysqli {
         if ($f->num_rows != 1) throw new DatabaseException("User does not exists!");
         return $f->fetch_assoc();
     }
+    public function getLoginKeyUsage(string $key): int {
+        return self::query("SELECT id FROM users WHERE loginkey = '$key'")->num_rows;
+    }
+    public function assignKeyToUserID(string $key, int $user_id): void {
+        self::query("UPDATE users SET loginkey = '$key' WHERE id = '$user_id'");
+    }
 }
