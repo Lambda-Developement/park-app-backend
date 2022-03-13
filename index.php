@@ -1,5 +1,5 @@
 <?php
-
+require 'Exceptions.php';
 require 'Logger.php';
 require 'Database.php';
 require 'Package.php';

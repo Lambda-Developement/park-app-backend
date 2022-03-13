@@ -1,7 +1,6 @@
 <?php
 require_once 'Config.php';
-
-class DatabaseException extends Exception {}
+require_once 'Exceptions.php';
 
 class Database extends mysqli {
     function __construct() {
