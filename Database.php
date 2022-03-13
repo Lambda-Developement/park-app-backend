@@ -1,8 +1,9 @@
 <?php
+require_once 'DatabaseInterface.php';
 require_once 'Config.php';
 require_once 'Exceptions.php';
 
-class Database extends mysqli {
+class Database extends mysqli implements DatabaseInterface {
     function __construct() {
         parent::__construct(Config::DB_URL, Config::DB_USER, Config::DB_PASS, Config::DB)
             or throw new DatabaseException("Unable to connect!");
