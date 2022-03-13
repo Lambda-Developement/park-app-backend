@@ -44,7 +44,12 @@ switch ($pack->action) {
         if (!password_verify($passwd, $hash)) {
             die(http_response_code(401));
         }
-        $key = Keys::assign($udata['id']);
+        try {
+            $key = Keys::assign($udata['id']);
+        } catch (KeyGeneratorException $e) {
+            Logger::log($e->getMessage());
+            die(http_response_code(503));
+        }
         die($key);
     case Action::VALIDATE_KEY:
         if (is_null($pack->data)) die(http_response_code(406));
