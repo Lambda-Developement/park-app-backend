@@ -24,4 +24,7 @@ class Database extends mysqli implements DatabaseInterface {
     public function assignKeyToUserID(string $key, int $user_id): void {
         self::query("UPDATE users SET loginkey = '$key' WHERE id = '$user_id'");
     }
+    function __destruct() {
+        self::close();
+    }
 }
