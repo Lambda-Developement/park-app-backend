@@ -18,6 +18,8 @@ try {
     $pack = new Package($request);
 } catch (UnexpectedValueException $e) {
     die(http_response_code(418));
+} catch (DatabaseException $e) {
+    die(http_response_code(417));
 }
 
 try {
