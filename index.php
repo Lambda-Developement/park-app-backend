@@ -4,6 +4,7 @@ require 'Logger.php';
 require 'Database.php';
 require 'Package.php';
 require 'Keys.php';
+require 'MailSender.php';
 
 if (!isset($_POST['request'])) die(http_response_code(403));
 
