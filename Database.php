@@ -9,20 +9,32 @@ class Database extends mysqli implements DatabaseInterface {
             or throw new DatabaseException("Unable to connect!");
     }
     public function getUserByLogin(string $login): array {
-        $f = self::query("SELECT * FROM users WHERE login = '$login'");
+        $prep = self::prepare("SELECT * FROM users WHERE login = ?");
+        $prep->bind_param('s', $login);
+        $prep->execute();
+        $f = $prep->get_result();
+        $prep->close();
         if ($f->num_rows != 1) throw new DatabaseException("User does not exists!");
         return $f->fetch_assoc();
     }
     public function getUserByKey(string $key): array {
-        $f = self::query("SELECT * FROM users WHERE loginkey = '$key'");
+        $prep = self::prepare("SELECT * FROM users WHERE loginkey = ?");
+        $prep->bind_param('s', $key);
+        $prep->execute();
+        $f = $prep->get_result();
         if ($f->num_rows != 1) throw new DatabaseException("User does not exists!");
         return $f->fetch_assoc();
     }
     public function getLoginKeyUsage(string $key): int {
-        return self::query("SELECT id FROM users WHERE loginkey = '$key'")->num_rows;
+        $prep = self::prepare("SELECT id FROM users WHERE loginkey = ?");
+        $prep->bind_param('s', $key);
+        $prep->execute();
+        return $prep->get_result()->num_rows;
     }
     public function assignKeyToUserID(string $key, int $user_id): void {
-        self::query("UPDATE users SET loginkey = '$key' WHERE id = '$user_id'");
+        $prep = self::prepare("UPDATE users SET loginkey = ? WHERE id = ?");
+        $prep->bind_param('ss', $key, $user_id);
+        $prep->execute();
     }
     function __destruct() {
         self::close();
