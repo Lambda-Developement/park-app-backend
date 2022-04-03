@@ -21,7 +21,7 @@ class MailSender {
         try {
             $mail->setFrom($user, $username);
         } catch (Exception $e) {
-            throw new MailSendFailed($e->getMessage(), $e->getCode(), $e);
+            throw new MailSendFailedException($e->getMessage(), $e->getCode(), $e);
         }
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port = 465;
@@ -31,7 +31,7 @@ class MailSender {
         try {
             $this->mailer->addAddress($address);
         } catch (Exception $e) {
-            throw new MailSendFailed($e->getMessage(), $e->getCode(), $e);
+            throw new MailSendFailedException($e->getMessage(), $e->getCode(), $e);
         }
         return $this;
     }
@@ -40,7 +40,7 @@ class MailSender {
         try {
             $this->mailer->addBCC($address);
         } catch (Exception $e) {
-            throw new MailSendFailed($e->getMessage(), $e->getCode(), $e);
+            throw new MailSendFailedException($e->getMessage(), $e->getCode(), $e);
         }
         return $this;
     }
@@ -49,7 +49,7 @@ class MailSender {
         try {
             $this->mailer->addAttachment($file);
         } catch (Exception $e) {
-            throw new MailSendFailed($e->getMessage(), $e->getCode(), $e);
+            throw new MailSendFailedException($e->getMessage(), $e->getCode(), $e);
         }
         return $this;
     }
@@ -73,7 +73,7 @@ class MailSender {
         try {
             $this->mailer->send();
         } catch (Exception $e) {
-            throw new MailSendFailed($e->getMessage(), $e->getCode(), $e);
+            throw new MailSendFailedException($e->getMessage(), $e->getCode(), $e);
         }
     }
 }
