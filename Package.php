@@ -5,6 +5,9 @@ require_once 'Exceptions.php';
 enum Action: string {
     case LOGIN = 'login';
     case VALIDATE_KEY = 'kval';
+    case REGISTER = 'reg';
+    case DATA_REQUEST = 'data';
+    case REMIND_PASS = 'remind';
 }
 
 class Package {

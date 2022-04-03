@@ -62,5 +62,41 @@ switch ($pack->action) {
             die(http_response_code(417));
         }
         exit;
+    case Action::REGISTER:
+        if (is_null($pack->data)) die(http_response_code(406));
+        elseif (!isset($pack->data->name) || !isset($pack->data->mail) || !isset($pack->data->pass)) die(http_response_code(400));
+        // TODO: Отправка подтверждения регистрации
+        //$mail = new MailSender();
+        $data = $pack->data;
+        $name = $data->name;
+        $mail = $data->mail;
+        $pass = $data->pass;
+        $hash = password_hash($pass, PASSWORD_BCRYPT);
+        try {
+            $db->insertUser($mail, $name, $hash);
+        } catch (UserAlreadyRegisteredException) {
+            die(http_response_code(409));
+        }
+        exit;
+    case Action::DATA_REQUEST:
+        try {
+            $data = json_encode($db->getData(), flags: JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            die(http_response_code(510));
+        }
+        exit($data);
+    case Action::REMIND_PASS:
+        if (!isset($pack->data->mail)) die(http_response_code(400));
+        $mail = $pack->data->mail;
+        try {
+            $m = $db->getUserByLogin($mail);
+            // TODO: Отправка сообщения о восстановлении
+            // DEBUG: Пока не реализованы подтверждения
+            $db->setUserPassword($mail, 12345);
+        } catch (DatabaseException $e) {
+            // do nothing -> follow for finally
+        } finally {
+            exit;
+        }
     default: die(http_response_code(405));
 }
