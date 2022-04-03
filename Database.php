@@ -36,6 +36,32 @@ class Database extends mysqli implements DatabaseInterface {
         $prep->bind_param('ss', $key, $user_id);
         $prep->execute();
     }
+    public function insertUser(string $email, string $name, string $hash): void {
+        try {
+            $this->getUserByLogin($email);
+        } catch (DatabaseException $e) {
+            throw new UserAlreadyRegisteredException(previous: $e);
+        }
+        $prep = self::prepare("INSERT INTO users(login, name, hash) VALUES (?, ?, ?)");
+        $prep->bind_param('sss', $email, $name, $hash);
+        $prep->execute();
+        $prep->close();
+    }
+    public function setUserPassword(string $email, string $hash): void {
+        try {
+            $this->getUserByLogin($email);
+        } catch (DatabaseException $e) {
+            throw new UserNotFoundException(previous: $e);
+        }
+        $prep = self::prepare("UPDATE users SET hash = ? WHERE login = ?");
+        $prep->bind_param('ss', $hash, $email);
+        $prep->execute();
+        $prep->close();
+    }
+    public function getData(): array {
+        $q = self::query("SELECT lat, lon, occupied, addr FROM parkings");
+        return $q->fetch_all();
+    }
     function __destruct() {
         self::close();
     }
