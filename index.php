@@ -32,7 +32,7 @@ try {
 
 switch ($pack->action) {
     case Action::LOGIN:
-        if (is_null($pack->data)) die(http_response_code(406));
+        if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->login) || !isset($pack->data->pass)) die(http_response_code(400));
         $login = $pack->data->login;
         try {
@@ -53,7 +53,7 @@ switch ($pack->action) {
         }
         die($key);
     case Action::VALIDATE_KEY:
-        if (is_null($pack->data)) die(http_response_code(406));
+        if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->key)) die(http_response_code(400));
         $key = $pack->data->key;
         try {
@@ -63,7 +63,7 @@ switch ($pack->action) {
         }
         exit;
     case Action::REGISTER:
-        if (is_null($pack->data)) die(http_response_code(406));
+        if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->name) || !isset($pack->data->mail) || !isset($pack->data->pass)) die(http_response_code(400));
         // TODO: Отправка подтверждения регистрации
         //$mail = new MailSender();
@@ -86,7 +86,8 @@ switch ($pack->action) {
         }
         exit($data);
     case Action::REMIND_PASS:
-        if (!isset($pack->data->mail)) die(http_response_code(400));
+        if (!isset($pack->data)) die(http_response_code(406));
+        elseif (!isset($pack->data->mail)) die(http_response_code(400));
         $mail = $pack->data->mail;
         try {
             $m = $db->getUserByLogin($mail);
