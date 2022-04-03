@@ -12,7 +12,7 @@ try {
     $request = json_decode($_POST['request'], flags: JSON_THROW_ON_ERROR);
 } catch (JsonException $e) {
     Logger::log($e->getMessage());
-    die("JsonException[{$e->getCode()}]: {$e->getMessage()}");
+    die(http_response_code(510));
 }
 
 try {
