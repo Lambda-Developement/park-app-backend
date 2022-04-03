@@ -62,6 +62,13 @@ class Database extends mysqli implements DatabaseInterface {
         $q = self::query("SELECT lat, lon, occupied, addr FROM parkings");
         return $q->fetch_all();
     }
+    public function insertErrorMessage(string $message, User $sender): void {
+        $senderid = $sender->id;
+        $prep = self::prepare("INSERT INTO error_messages(senderid, text) VALUES (?, ?)");
+        $prep->bind_param('is', $senderid, $message);
+        $prep->execute();
+        $prep->close();
+    }
     function __destruct() {
         self::close();
     }
