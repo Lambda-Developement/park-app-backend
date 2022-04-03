@@ -8,6 +8,7 @@ enum Action: string {
     case REGISTER = 'reg';
     case DATA_REQUEST = 'data';
     case REMIND_PASS = 'remind';
+    case ERROR_MSG = 'emsg';
 }
 
 class Package {

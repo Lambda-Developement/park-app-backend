@@ -85,6 +85,13 @@ switch ($pack->action) {
             die(http_response_code(510));
         }
         exit($data);
+    case Action::ERROR_MSG:
+        if (!isset($pack->data)) die(http_response_code(406));
+        elseif (!$pack->invoker instanceof User) die(http_response_code(424));
+        elseif (!isset($pack->data->text)) die(http_response_code(400));
+        $text = $pack->data->text;
+        $db->insertErrorMessage($text, $pack->invoker);
+        exit;
     case Action::REMIND_PASS:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->mail)) die(http_response_code(400));
