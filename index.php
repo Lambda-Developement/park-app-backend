@@ -6,6 +6,10 @@ require 'Package.php';
 require 'Keys.php';
 require 'MailSender.php';
 
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST");
+header("Access-Control-Allow-Headers: X-Requested-With");
+
 if (!isset($_POST['request'])) die(http_response_code(403));
 
 try {
