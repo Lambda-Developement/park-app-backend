@@ -39,13 +39,13 @@ class Database extends mysqli implements DatabaseInterface {
     public function insertUser(string $email, string $name, string $hash): void {
         try {
             $this->getUserByLogin($email);
+            throw new UserAlreadyRegisteredException();
         } catch (DatabaseException $e) {
-            throw new UserAlreadyRegisteredException(previous: $e);
+            $prep = self::prepare("INSERT INTO users(login, name, hash) VALUES (?, ?, ?)");
+            $prep->bind_param('sss', $email, $name, $hash);
+            $prep->execute() or die($prep->error);
+            $prep->close();
         }
-        $prep = self::prepare("INSERT INTO users(login, name, hash) VALUES (?, ?, ?)");
-        $prep->bind_param('sss', $email, $name, $hash);
-        $prep->execute();
-        $prep->close();
     }
     public function setUserPassword(string $email, string $hash): void {
         try {
