@@ -23,6 +23,7 @@ class Package {
     readonly public ?User $invoker;
     readonly public Action $action;
     readonly public ?object $data;
+    readonly public ?array $image;
 
     /**
      * @param object $json_object JSON object received over HTTPS
@@ -34,6 +35,7 @@ class Package {
         if (!isset($json_object->action)) throw new UnexpectedValueException("No action specified!", 0xF);
         try {
             $this->invoker = (isset($json_object->user_key)) ? new User($json_object->user_key) : NULL;
+            $this->image = (isset($_FILES['new_avatar_img'])) ? $_FILES['new_avatar_img'] : NULL;
             $this->action = Action::from($json_object->action);
         } catch (ValueError) {
             throw new UnexpectedValueException("Action is unknown!", 0xFF);
