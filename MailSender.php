@@ -35,24 +35,6 @@ class MailSender {
         }
         return $this;
     }
-    // TODO: Probably not required for this project
-    public function addBCC($address): MailSender {
-        try {
-            $this->mailer->addBCC($address);
-        } catch (Exception $e) {
-            throw new MailSendFailedException($e->getMessage(), $e->getCode(), $e);
-        }
-        return $this;
-    }
-    // TODO: Probably not required for this project
-    public function addAttachment($file): MailSender {
-        try {
-            $this->mailer->addAttachment($file);
-        } catch (Exception $e) {
-            throw new MailSendFailedException($e->getMessage(), $e->getCode(), $e);
-        }
-        return $this;
-    }
     public function setSubject($subject): MailSender {
         $this->mailer->Subject = $subject;
         return $this;

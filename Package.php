@@ -6,9 +6,16 @@ enum Action: string {
     case LOGIN = 'login';
     case VALIDATE_KEY = 'kval';
     case REGISTER = 'reg';
+    case REG_CONF = 'regconf';
     case DATA_REQUEST = 'data';
     case REMIND_PASS = 'remind';
+    case REMIND_CONF = 'remindconf';
     case ERROR_MSG = 'emsg';
+    case USER_DATA_REQUEST = 'userdata';
+    case EDIT_USER_DATA = 'pupd';
+    case UPLOAD_PROFILE_PIC = 'picupd';
+    case CREATE_REVIEW = 'crrev';
+    case GET_REVIEWS = 'getrev';
 }
 
 class Package {
