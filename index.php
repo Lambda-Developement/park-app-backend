@@ -216,7 +216,6 @@ switch ($pack->action) {
     case Action::GET_REVIEWS:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->id)) die(http_response_code(400));
-        elseif (!$pack->invoker instanceof User) die(http_response_code(424));
         $id = $pack->data->id;
         try {
             $r = $db->getReviews($id);
