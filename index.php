@@ -77,6 +77,12 @@ switch ($pack->action) {
         $pass = $data->pass;
         $hash = password_hash($pass, PASSWORD_BCRYPT);
         try {
+            $db->getUserByLogin($mail);
+            die(http_response_code(409));
+        } catch (DatabaseException) {
+            // As planned...
+        }
+        try {
             $key = Keys::generateKey();
             (new MailSender())->addAddress($mail)
                 ->setSubject("Подтверждение регистрации в Park App")
