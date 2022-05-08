@@ -20,5 +20,7 @@ interface DatabaseInterface {
     public function insertReview(User $author, int $park_id, int $mark, ?string $review): void;
     public function getReviews(int $park_id): array;
     public function activateUser(int $user_id): void;
+    public function getParkingList(): array;
+    public function assignOccupiedValue(int $park_id, int $value): void;
     function __destruct();
 }

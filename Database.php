@@ -104,6 +104,14 @@ class Database extends mysqli implements DatabaseInterface {
     }
     public function activateUser(int $user_id): void {
         self::fastPrepare("UPDATE users SET confkey = NULL, confirmed = 1 WHERE id = ?", 'i', $user_id);
+    public function getParkingList(): array {
+        return self::query("SELECT id FROM parkings")->fetch_all();
+    }
+    public function assignOccupiedValue(int $park_id, int $value): void {
+        if ($value < 1 || $value > 9) throw new InvalidArgumentException();
+        $pnr = self::quickPrep("SELECT id FROM parkings WHERE id = ?", 'i', $park_id)->num_rows;
+        if ($pnr != 1) throw new ENotFoundException();
+        self::quickPrep("UPDATE parkings SET occupied = ? WHERE id = ?", 'ii', $value, $park_id);
     }
     function __destruct() {
         self::close();
