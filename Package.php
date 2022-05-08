@@ -2,26 +2,26 @@
 require_once 'User.php';
 require_once 'Exceptions.php';
 
-enum Action: string {
+enum Request: string {
     case LOGIN = 'login';
-    case VALIDATE_KEY = 'kval';
-    case REGISTER = 'reg';
-    case REG_CONF = 'regconf';
-    case DATA_REQUEST = 'data';
-    case REMIND_PASS = 'remind';
-    case REMIND_CONF = 'remindconf';
-    case ERROR_MSG = 'emsg';
-    case USER_DATA_REQUEST = 'userdata';
-    case EDIT_USER_DATA = 'pupd';
-    case UPLOAD_PROFILE_PIC = 'picupd';
-    case CREATE_REVIEW = 'crrev';
-    case GET_REVIEWS = 'getrev';
+    case CHECK_KEY = 'checkkey';
+    case REGISTRATION = 'register';
+    case REGISTRATION_CONFIRMATION = 'confirmregistration';
+    case DATA_REQUEST = 'getdata';
+    case REMIND_PASSWORD = 'remindrequest';
+    case REMIND_PASSWORD_CONFIRMATION = 'remindconfirmation';
+    case INSERT_ERROR = 'errornotification';
+    case GET_PROFILE_DATA = 'getprofiledata';
+    case EDIT_PROFILE_DATA = 'profiledataupdate';
+    case UPLOAD_PROFILE_PIC = 'profilepictureupdate';
+    case SET_REVIEW = 'setreview';
+    case GET_REVIEWS = 'getrevewlist';
 }
 
 class Package {
 
     readonly public ?User $invoker;
-    readonly public Action $action;
+    readonly public Request $request;
     readonly public ?object $data;
     readonly public ?array $image;
 
@@ -36,7 +36,7 @@ class Package {
         try {
             $this->invoker = (isset($json_object->user_key)) ? new User($json_object->user_key) : NULL;
             $this->image = (isset($_FILES['new_avatar_img'])) ? $_FILES['new_avatar_img'] : NULL;
-            $this->action = Action::from($json_object->action);
+            $this->request = Request::from($json_object->action);
         } catch (ValueError) {
             throw new UnexpectedValueException("Action is unknown!", 0xFF);
         } catch (DatabaseException $e) {

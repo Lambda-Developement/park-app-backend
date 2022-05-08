@@ -1,7 +1,7 @@
 <?php
 class DatabaseException extends Exception {}
-class KeyGeneratorException extends Exception {}
-class MailSendFailedException extends Exception {}
-class UserAlreadyRegisteredException extends Exception {}
-class UserNotFoundException extends Exception {}
-class ElementNotFoundException extends Exception {}
+class KeyException extends Exception {}
+class MailException extends Exception {}
+class AlreadyRegisteredException extends Exception {}
+class NotFoundException extends Exception {}
+class ENotFoundException extends Exception {}

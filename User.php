@@ -32,6 +32,6 @@ class User {
         return [$this->id, $this->avatar_loc, $this->name, $this->gender, $this->dob, $this->login, $this->phone];
     }
     public function updateUsingArray(array $changes): void {
-        (new Database())->arrayUpdateUser($this->id, $changes);
+        (new Database())->multipleUserUpdate($this->id, $changes);
     }
 }

@@ -27,15 +27,10 @@ try {
     die(http_response_code(417));
 }
 
-try {
-    $db = new Database();
-} catch (DatabaseException) {
-    Logger::log("Unable to connect to the database!");
-    die(http_response_code(504));
-}
+$db = new Database();
 
-switch ($pack->action) {
-    case Action::LOGIN:
+switch ($pack->request) {
+    case Request::LOGIN:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->login) || !isset($pack->data->pass)) die(http_response_code(400));
         $login = $pack->data->login;
@@ -52,12 +47,12 @@ switch ($pack->action) {
         }
         try {
             $key = Keys::assignLoginKey($udata['id']);
-        } catch (KeyGeneratorException $e) {
+        } catch (KeyException $e) {
             Logger::log($e->getMessage());
             die(http_response_code(503));
         }
         die($key);
-    case Action::VALIDATE_KEY:
+    case Request::CHECK_KEY:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->key)) die(http_response_code(400));
         $key = $pack->data->key;
@@ -67,7 +62,7 @@ switch ($pack->action) {
             die(http_response_code(417));
         }
         exit;
-    case Action::REGISTER:
+    case Request::REGISTRATION:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->name) || !isset($pack->data->mail) || !isset($pack->data->pass)) die(http_response_code(400));
         // TODO: Отправка подтверждения регистрации
@@ -79,9 +74,7 @@ switch ($pack->action) {
         try {
             $db->getUserByLogin($mail);
             die(http_response_code(409));
-        } catch (DatabaseException) {
-            // As planned...
-        }
+        } catch (DatabaseException) { }
         try {
             $key = Keys::generateKey();
             (new MailSender())->addAddress($mail)
@@ -89,13 +82,13 @@ switch ($pack->action) {
                 ->setBody("http://io.cordova.parkapp/mail/{$key}")
                 ->send();
             $db->insertUser($mail, $name, $hash, $key);
-        } catch (UserAlreadyRegisteredException) {
+        } catch (AlreadyRegisteredException) {
             die(http_response_code(409));
-        } catch (MailSendFailedException) {
+        } catch (MailException) {
             die(http_response_code(523));
         }
         exit;
-    case Action::REG_CONF:
+    case Request::REGISTRATION_CONFIRMATION:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->conf)) die(http_response_code(400));
         $key = $pack->data->conf;
@@ -107,21 +100,21 @@ switch ($pack->action) {
         }
         $db->activateUser($u['id']);
         exit;
-    case Action::DATA_REQUEST:
+    case Request::DATA_REQUEST:
         try {
             $data = json_encode($db->getData(), flags: JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             die(http_response_code(510));
         }
         exit($data);
-    case Action::ERROR_MSG:
+    case Request::INSERT_ERROR:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!$pack->invoker instanceof User) die(http_response_code(424));
         elseif (!isset($pack->data->text)) die(http_response_code(400));
         $text = $pack->data->text;
         $db->insertErrorMessage($text, $pack->invoker);
         exit;
-    case Action::REMIND_PASS:
+    case Request::REMIND_PASSWORD:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->mail)) die(http_response_code(400));
         $mail = $pack->data->mail;
@@ -133,29 +126,28 @@ switch ($pack->action) {
                 ->setBody("http://io.cordova.parkapp/password/{$key}")
                 ->setSubject("Восстановление пароля в Park App")
                 ->send();
-        } catch (DatabaseException|MailSendFailedException $e) {
-            // do nothing -> follow for finally
-        } finally {
+        } catch (DatabaseException|MailException $e) {
             exit;
         }
-    case Action::REMIND_CONF:
+        exit;
+    case Request::REMIND_PASSWORD_CONFIRMATION:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->conf) || !isset($pack->data->pass)) die(http_response_code(400));
         $key = $pack->data->conf;
-        if ($db->getRemindKeyUsage($key) != 1) die(http_response_code(417));
+        if ($db->getRestoreKeyUsage($key) != 1) die(http_response_code(417));
         try {
-            $u = $db->getUserByRemindKey($key);
+            $u = $db->getUserByRestoreKey($key);
         } catch (DatabaseException) {
             die(http_response_code(417));
         }
         $hash = password_hash($pack->data->pass, PASSWORD_BCRYPT);
         try {
-            $db->setUserPassword($u['login'], $hash);
-        } catch (UserNotFoundException $e) {
+            $db->updatePassword($u['login'], $hash);
+        } catch (NotFoundException $e) {
             die(http_response_code(417));
         }
         exit;
-    case Action::USER_DATA_REQUEST:
+    case Request::GET_PROFILE_DATA:
         if (!$pack->invoker instanceof User) die(http_response_code(424));
         try {
             $je = json_encode($pack->invoker->getData(), flags: JSON_THROW_ON_ERROR);
@@ -163,7 +155,7 @@ switch ($pack->action) {
             die(http_response_code(510));
         }
         exit($je);
-    case Action::EDIT_USER_DATA:
+    case Request::EDIT_PROFILE_DATA:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!$pack->invoker instanceof User) die(http_response_code(424));
         $data = (array) $pack->data;
@@ -179,9 +171,9 @@ switch ($pack->action) {
                 $data['dob'] = date('Y-m-d', $elem);
             }
         }
-        $pack->invoker->updateUsingArray($data); //! NOTE: After this call it is prohibited to use $pack->invoker
+        $pack->invoker->updateUsingArray($data);
         exit;
-    case Action::UPLOAD_PROFILE_PIC:
+    case Request::UPLOAD_PROFILE_PIC:
         if (!isset($pack->image)) die(http_response_code(406));
         elseif (!$pack->invoker instanceof User) die(http_response_code(424));
         if ($pack->image['size'] == 0) die(http_response_code(400));
@@ -189,17 +181,13 @@ switch ($pack->action) {
         if (is_uploaded_file($pack->image['tmp_name'])) {
             $ext = ".".pathinfo($pack->image['name'], PATHINFO_EXTENSION);
             if ($ext != '.png' && $ext != '.jpg' && $ext != '.jpeg') die(http_response_code(400));
-            if ($pack->invoker->avatar_loc != NULL) {
-                // delete old avatar
-                unlink($pack->invoker->avatar_loc);
-                //! NOTE: Avatar location stored in User object is not correct anymore
-            }
+            if ($pack->invoker->avatar_loc != NULL) unlink($pack->invoker->avatar_loc);
             $target = 'avatars/'.$pack->invoker->id."_".bin2hex(random_bytes(5)).$ext;
             move_uploaded_file($pack->image['tmp_name'], $target);
-            $db->updateAvatarLocation($pack->invoker->id, $target);
+            $db->updateAvatarPosition($pack->invoker->id, $target);
         } else die(http_response_code(400));
         exit;
-    case Action::CREATE_REVIEW:
+    case Request::SET_REVIEW:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->id) || !isset($pack->data->mark)) die(http_response_code(400));
         elseif (!$pack->invoker instanceof User) die(http_response_code(424));
@@ -209,17 +197,17 @@ switch ($pack->action) {
         $review = $pack->data->review ?? NULL;
         try {
             if ($pack->data->type == 0) $db->insertReview($pack->invoker, $id, $mark, $review);
-        } catch (ElementNotFoundException $e) {
+        } catch (ENotFoundException $e) {
             die(http_response_code(417));
         }
         exit;
-    case Action::GET_REVIEWS:
+    case Request::GET_REVIEWS:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->id)) die(http_response_code(400));
         $id = $pack->data->id;
         try {
             $r = $db->getReviews($id);
-        } catch (ElementNotFoundException $e) {
+        } catch (ENotFoundException $e) {
             die(http_response_code(417));
         }
         $tot = 0;
@@ -243,5 +231,4 @@ switch ($pack->action) {
             die(http_response_code(510));
         }
         exit($je);
-    default: die(http_response_code(405));
 }
