@@ -39,7 +39,7 @@ switch ($pack->request) {
         } catch (DatabaseException) {
             die(http_response_code(417));
         }
-        if ($udata['confirmed'] == 0) die(http_response_code(402));
+        //if ($udata['confirmed'] == 0) die(http_response_code(402));
         $hash = $udata['hash'];
         $passwd = $pack->data->pass;
         if (!password_verify($passwd, $hash)) {
@@ -65,7 +65,6 @@ switch ($pack->request) {
     case Request::REGISTRATION:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->name) || !isset($pack->data->mail) || !isset($pack->data->pass)) die(http_response_code(400));
-        // TODO: Отправка подтверждения регистрации
         $data = $pack->data;
         $name = $data->name;
         $mail = $data->mail;
@@ -76,19 +75,19 @@ switch ($pack->request) {
             die(http_response_code(409));
         } catch (DatabaseException) { }
         try {
-            $key = Keys::generateKey();
+            /*$key = Keys::generateKey();
             (new MailSender())->addAddress($mail)
                 ->setSubject("Подтверждение регистрации в Park App")
                 ->setBody("http://io.cordova.parkapp/mail/{$key}")
-                ->send();
-            $db->insertUser($mail, $name, $hash, $key);
+                ->send();*/
+            $db->insertUser($mail, $name, $hash, NULL);
         } catch (AlreadyRegisteredException) {
             die(http_response_code(409));
-        } catch (MailException) {
+        } /*catch (MailException) {
             die(http_response_code(523));
-        }
+        }*/
         exit;
-    case Request::REGISTRATION_CONFIRMATION:
+    /*case Request::REGISTRATION_CONFIRMATION:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->conf)) die(http_response_code(400));
         $key = $pack->data->conf;
@@ -99,7 +98,7 @@ switch ($pack->request) {
             die(http_response_code(417));
         }
         $db->activateUser($u['id']);
-        exit;
+        exit;*/
     case Request::DATA_REQUEST:
         try {
             $data = json_encode($db->getData(), flags: JSON_THROW_ON_ERROR);
@@ -114,12 +113,11 @@ switch ($pack->request) {
         $text = $pack->data->text;
         $db->insertErrorMessage($text, $pack->invoker);
         exit;
-    case Request::REMIND_PASSWORD:
+    /*case Request::REMIND_PASSWORD:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->mail)) die(http_response_code(400));
         $mail = $pack->data->mail;
         try {
-            // TODO: Отправка сообщения о восстановлении
             $d = $db->getUserByLogin($mail);
             $key = Keys::assignRemindKey($d['id']);
             (new MailSender())->addAddress($mail)
@@ -129,8 +127,8 @@ switch ($pack->request) {
         } catch (DatabaseException|MailException $e) {
             exit;
         }
-        exit;
-    case Request::REMIND_PASSWORD_CONFIRMATION:
+        exit;*/
+    /*case Request::REMIND_PASSWORD_CONFIRMATION:
         if (!isset($pack->data)) die(http_response_code(406));
         elseif (!isset($pack->data->conf) || !isset($pack->data->pass)) die(http_response_code(400));
         $key = $pack->data->conf;
@@ -146,7 +144,7 @@ switch ($pack->request) {
         } catch (NotFoundException $e) {
             die(http_response_code(417));
         }
-        exit;
+        exit;*/
     case Request::GET_PROFILE_DATA:
         if (!$pack->invoker instanceof User) die(http_response_code(424));
         try {
